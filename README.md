@@ -105,3 +105,7 @@ chmod +x /astrbot-napcat-bjiqg3/data/bin/cloudflared
 - 使用 `/cfzt bind` 保存通知会话，不要把 QQ 会话 ID 硬编码到源码。
 
 发布前运行 `python -m compileall .` 和 `git diff --check`，并确认 `AGENTS.md` 中的开发规范仍然适用。
+
+## 插件市场
+
+本插件的安装元数据位于仓库根目录的 `metadata.yaml`。市场源 JSON 使用独立的 registry 格式，不应把 `plugin_id`、本地目录名或 SSH 仓库地址写入插件元数据。当前市场记录由订阅聚合插件仓库中的 `plugins.json` 统一维护。

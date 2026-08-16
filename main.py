@@ -26,7 +26,7 @@ def cfzt():
     PLUGIN_NAME,
     "chenh",
     "独立守护 cloudflared，并在 Bot 后台连续故障时重启并通知。",
-    "0.2.0",
+    "0.2.1",
 )
 class CloudflareTunnelPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
