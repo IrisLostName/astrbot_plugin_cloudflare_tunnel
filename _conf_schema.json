@@ -9,9 +9,26 @@
   "health_check_interval_minutes": {"type": "int", "description": "检查间隔", "default": 5},
   "health_check_timeout_seconds": {"type": "int", "description": "请求超时", "default": 8},
   "health_check_failure_restart_threshold": {"type": "int", "description": "连续失败重启阈值", "default": 3},
-  "extra_health_checks": {"type": "template_list", "description": "内部健康检查", "default": []},
+  "extra_health_checks": {
+    "type": "template_list",
+    "description": "内部健康检查",
+    "hint": "添加 Bot、订阅服务或同容器内部回源地址；不要填 Access 保护的公网地址。",
+    "templates": {
+      "check": {
+        "name": "健康检查",
+        "display_item": "name",
+        "items": {
+          "name": {"type": "string", "description": "名称", "default": "内部服务"},
+          "url": {"type": "string", "description": "内部 URL", "default": "http://127.0.0.1:6185"},
+          "expected_statuses": {"type": "list", "description": "可接受状态码", "default": [200, 302, 401, 403]},
+          "enabled": {"type": "bool", "description": "启用", "default": true}
+        }
+      }
+    },
+    "default": []
+  },
   "notify_targets": {"type": "list", "description": "通知会话", "default": []},
   "notify_on_error": {"type": "bool", "description": "故障通知", "default": true},
-  "public_status_url": {"type": "string", "description": "Bot 公网边缘检查地址，302/403 代表 Access 边缘可达", "default": "https://bot.tomori.cloud/"},
-  "public_status_expected_statuses": {"type": "list", "description": "公网边缘可接受状态码", "default": [200, 302, 403]}
+  "public_probe_url": {"type": "string", "description": "公网观测地址，仅用于 status 分类，不参与自动重启", "default": "https://bot.tomori.cloud/"},
+  "public_probe_timeout_seconds": {"type": "int", "description": "公网观测超时", "default": 8}
 }

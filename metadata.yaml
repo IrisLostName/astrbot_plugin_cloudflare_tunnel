@@ -2,7 +2,7 @@ name: astrbot_plugin_cloudflare_tunnel
 display_name: Cloudflare Tunnel 守护
 desc: 守护 cloudflared 子进程，检查内部回源并在故障时通知。
 short_desc: cloudflared 生命周期、健康检查与熔断通知。
-version: 0.2.3
+version: 0.2.4
 author: chenh
 repo: https://github.com/IrisLostName/astrbot_plugin_cloudflare_tunnel
 astrbot_version: ">=4.10.4,<5"

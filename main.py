@@ -14,6 +14,7 @@ if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
 from tunnel.health import HealthFailureTracker, HealthProbe
+from tunnel.public_probe import probe_public_url
 from tunnel.settings import TunnelSettings, redact
 from tunnel.state import TunnelStateStore
 from tunnel.supervisor import CloudflaredSupervisor
@@ -27,7 +28,7 @@ def cfzt():
     pass
 
 
-@register(PLUGIN_NAME, "chenh", "守护 cloudflared 子进程，检查内部回源并在故障时通知。", "0.2.3")
+@register(PLUGIN_NAME, "chenh", "守护 cloudflared 子进程，检查内部回源并在故障时通知。", "0.2.4")
 class CloudflareTunnelPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -84,7 +85,10 @@ class CloudflareTunnelPlugin(Star):
     @cfzt.command("status")
     async def status_cmd(self, event: AstrMessageEvent):
         status = self.supervisor.status()
-        public_status = await self._public_status_text()
+        public_probe = await probe_public_url(
+            str(self.config.get("public_probe_url") or "https://bot.tomori.cloud/"),
+            int(self.config.get("public_probe_timeout_seconds") or 8),
+        )
         yield event.plain_result(
             "Cloudflare Tunnel 状态：\n"
             f"运行中：{status.running}\n"
@@ -94,7 +98,7 @@ class CloudflareTunnelPlugin(Star):
             f"最近退出：{status.last_exit or '无'}\n"
             f"状态目录：{self.settings.runtime_dir}\n"
             f"日志：{getattr(self.supervisor, 'log_path', self.settings.runtime_dir / 'cloudflared-supervisor.log')}\n"
-            f"公网边缘：{public_status}"
+            f"公网探针：{public_probe.classification}（{public_probe.detail}）"
         )
 
     @filter.permission_type(filter.PermissionType.ADMIN)
@@ -118,20 +122,6 @@ class CloudflareTunnelPlugin(Star):
             rows.append(f"- {item['name']} | {state} | {item['url']}")
             self.state.append_log("info" if result.ok else "warning", "manual health check", target=item["name"], ok=result.ok, reason=result.reason)
         yield event.plain_result("内部健康检查：\n" + ("\n".join(rows) or "暂无内部健康检查"))
-
-    async def _public_status_text(self) -> str:
-        url = str(self.config.get("public_status_url") or "https://bot.tomori.cloud/")
-        expected = set()
-        for value in self.config.get("public_status_expected_statuses", [200, 302, 403]):
-            try:
-                expected.add(int(value))
-            except (TypeError, ValueError):
-                continue
-        result = await self.probe.probe(url, expected or {200, 302, 403})
-        if result.ok:
-            return f"边缘可达（{result.reason or 'HTTP accepted'}），不代表已通过 Access"
-        return f"不可达（{result.reason}）"
-
 
     async def _health_loop(self):
         while not self._stopping:
