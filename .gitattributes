@@ -1,4 +1,0 @@
-# 发布包只保留运行所需文件；开发规范不进入 AstrBot 安装包。
-AGENTS.md export-ignore
-.gitattributes export-ignore
-.gitignore export-ignore

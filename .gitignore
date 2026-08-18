@@ -1,7 +1,5 @@
 __pycache__/
-*.pyc
-cloudflared.log
-
-# 本地发布检查产物
-dist/
-*.zip
+*.py[cod]
+.pytest_cache/
+*.log
+runtime/

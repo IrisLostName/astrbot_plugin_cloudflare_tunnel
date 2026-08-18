@@ -1,115 +1,17 @@
 {
-  "notify_on_error": {
-    "description": "失败时通知",
-    "type": "bool",
-    "default": true
-  },
-  "notify_targets": {
-    "description": "通知会话",
-    "type": "list",
-    "hint": "建议用 /cfzt bind 自动写入当前 QQ 会话。",
-    "default": []
-  },
-  "runtime_state_dir": {
-    "description": "运行状态目录",
-    "type": "string",
-    "hint": "用于保存 cloudflared.log 等运行状态文件。容器环境建议留空。",
-    "default": ""
-  },
-  "health_check_enable": {
-    "description": "启用 Bot 后台检查",
-    "type": "bool",
-    "default": true
-  },
-  "health_check_interval_minutes": {
-    "description": "Bot 后台检查间隔（分钟）",
-    "type": "int",
-    "default": 5
-  },
-  "health_check_timeout_seconds": {
-    "description": "Bot 后台检查超时（秒）",
-    "type": "int",
-    "default": 8
-  },
-  "health_check_failure_restart_threshold": {
-    "description": "Bot 后台连续失败重启阈值",
-    "type": "int",
-    "hint": "Bot 后台连续无法连接达到此次数后，重启 cloudflared 并推送通知。建议 3，也可设置为 5。",
-    "default": 3
-  },
-  "extra_health_checks": {
-    "type": "template_list",
-    "description": "附加健康检查",
-    "hint": "可用于检查 AstrBot 后台、本地转发或其他回源地址。",
-    "templates": {
-      "check": {
-        "name": "附加检查",
-        "display_item": "name",
-        "items": {
-          "name": {
-            "description": "名称",
-            "type": "string",
-            "default": "AstrBot 后台"
-          },
-          "url": {
-            "description": "地址",
-            "type": "string",
-            "default": "http://127.0.0.1:6185"
-          },
-          "expected_statuses": {
-            "description": "正常状态码",
-            "type": "list",
-            "hint": "例如 200、302、401、403。",
-            "default": [
-              200,
-              302,
-              401,
-              403
-            ]
-          },
-          "enabled": {
-            "description": "启用",
-            "type": "bool",
-            "default": true
-          }
-        }
-      }
-    }
-  },
-  "cloudflared_enable": {
-    "description": "启用 cloudflared 守护",
-    "type": "bool",
-    "default": false
-  },
-  "cloudflared_path": {
-    "description": "cloudflared 可执行文件路径",
-    "type": "string",
-    "default": "/astrbot-napcat-bjiqg3/data/bin/cloudflared"
-  },
-  "cloudflared_token": {
-    "description": "Cloudflare Tunnel Token",
-    "type": "string",
-    "default": ""
-  },
-  "cloudflared_command": {
-    "description": "自定义 cloudflared 命令",
-    "type": "string",
-    "default": ""
-  },
-  "cloudflared_restart_delay_seconds": {
-    "description": "cloudflared 重启等待秒数",
-    "type": "int",
-    "default": 10
-  },
-  "cloudflared_stop_timeout_seconds": {
-    "description": "cloudflared 停止等待秒数",
-    "type": "int",
-    "default": 8
-  },
-  "cloudflared_crash_limit": {
-    "description": "连续失败后停止自动重启次数",
-    "type": "int",
-    "hint": "cloudflared 连续启动失败或异常退出达到此次数后停止自动重启，默认 10。处理问题后使用 /cfzt restart 恢复。",
-    "default": 10
-  }
+  "cloudflared_enable": {"type": "bool", "description": "启用 cloudflared 守护", "default": false},
+  "cloudflared_path": {"type": "string", "description": "容器内 cloudflared 路径", "default": "/AstrBot/data/bin/cloudflared"},
+  "cloudflared_token": {"type": "string", "description": "Tunnel token（优先使用环境变量）", "default": ""},
+  "cloudflared_restart_delay_seconds": {"type": "int", "description": "重启等待秒数", "default": 10},
+  "cloudflared_crash_limit": {"type": "int", "description": "连续崩溃熔断上限", "default": 10},
+  "runtime_state_dir": {"type": "string", "description": "持久化运行目录", "default": ""},
+  "health_check_enable": {"type": "bool", "description": "启用内部健康检查", "default": true},
+  "health_check_interval_minutes": {"type": "int", "description": "检查间隔", "default": 5},
+  "health_check_timeout_seconds": {"type": "int", "description": "请求超时", "default": 8},
+  "health_check_failure_restart_threshold": {"type": "int", "description": "连续失败重启阈值", "default": 3},
+  "extra_health_checks": {"type": "template_list", "description": "内部健康检查", "default": []},
+  "notify_targets": {"type": "list", "description": "通知会话", "default": []},
+  "notify_on_error": {"type": "bool", "description": "故障通知", "default": true},
+  "public_status_url": {"type": "string", "description": "Bot 公网边缘检查地址，302/403 代表 Access 边缘可达", "default": "https://bot.tomori.cloud/"},
+  "public_status_expected_statuses": {"type": "list", "description": "公网边缘可接受状态码", "default": [200, 302, 403]}
 }
