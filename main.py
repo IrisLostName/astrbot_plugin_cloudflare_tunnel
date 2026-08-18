@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import sys
+from datetime import datetime
 from pathlib import Path
 
 from astrbot.api import AstrBotConfig, logger
@@ -28,7 +29,7 @@ def cfzt():
     pass
 
 
-@register(PLUGIN_NAME, "chenh", "守护 cloudflared 子进程，检查内部回源并在故障时通知。", "0.2.4")
+@register(PLUGIN_NAME, "chenh", "守护 cloudflared 子进程，检查内部回源并在故障时通知。", "0.2.5")
 class CloudflareTunnelPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
@@ -120,7 +121,7 @@ class CloudflareTunnelPlugin(Star):
             count = self.failures.record(item["name"], result.ok)
             state = "正常" if result.ok else f"失败 {count} 次：{result.reason}"
             rows.append(f"- {item['name']} | {state} | {item['url']}")
-            self.state.append_log("info" if result.ok else "warning", "manual health check", target=item["name"], ok=result.ok, reason=result.reason)
+            self._append_log("info" if result.ok else "warning", "manual health check", target=item["name"], ok=result.ok, reason=result.reason)
         yield event.plain_result("内部健康检查：\n" + ("\n".join(rows) or "暂无内部健康检查"))
 
     async def _health_loop(self):
@@ -129,7 +130,7 @@ class CloudflareTunnelPlugin(Star):
             for item in self._checks():
                 result = await self.probe.probe(item["url"], item["expected_statuses"])
                 count = self.failures.record(item["name"], result.ok)
-                self.state.append_log("info" if result.ok else "warning", "scheduled health check", target=item["name"], ok=result.ok, reason=result.reason, failures=count)
+                self._append_log("info" if result.ok else "warning", "scheduled health check", target=item["name"], ok=result.ok, reason=result.reason, failures=count)
                 if not result.ok:
                     threshold = max(1, int(self.config.get("health_check_failure_restart_threshold") or 3))
                     if self.settings.enabled and count >= threshold:
@@ -150,6 +151,16 @@ class CloudflareTunnelPlugin(Star):
                     pass
             result.append({"name": str(raw.get("name") or "check"), "url": str(raw["url"]), "expected_statuses": statuses or {200}})
         return result
+
+    def _append_log(self, level: str, message: str, **details: object) -> None:
+        writer = getattr(self.state, "append_log", None)
+        if callable(writer):
+            writer(level, message, **details)
+            return
+        path = self.settings.runtime_dir / "tunnel.log"
+        detail_text = " ".join(f"{key}={value}" for key, value in details.items())
+        with path.open("a", encoding="utf-8") as handle:
+            handle.write(f"{datetime.now().isoformat()} [{level}] {message} {detail_text}\n")
 
     async def _broadcast(self, text: str):
         for target in self.config.get("notify_targets", []):
