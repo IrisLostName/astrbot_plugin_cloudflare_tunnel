@@ -27,7 +27,7 @@ def cfzt():
     pass
 
 
-@register(PLUGIN_NAME, "chenh", "守护 cloudflared 子进程，检查内部回源并在故障时通知。", "0.2.2")
+@register(PLUGIN_NAME, "chenh", "守护 cloudflared 子进程，检查内部回源并在故障时通知。", "0.2.3")
 class CloudflareTunnelPlugin(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
